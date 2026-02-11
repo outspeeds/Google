@@ -1,0 +1,11 @@
+[
+    { "id": "mario", "name": "Super Mario", "url": "https://games-site.github.io/projects/mario/index.html", "desc": "The classic platforming adventure." },
+    { "id": "paperio", "name": "Paper.io 2", "url": "https://games-site.github.io/projects/paperio2/index.html", "desc": "Conquer as much territory as possible." },
+    { "id": "pacman", "name": "Pac-Man", "url": "https://games-site.github.io/projects/pacman/index.html", "desc": "Navigate the maze and eat the dots." },
+    { "id": "ballsort", "name": "Ball Sort", "url": "https://games-site.github.io/projects/ball-sort-puzzle/index.html", "desc": "Sort the colored balls in the tubes." },
+    { "id": "cookie", "name": "Cookie Clicker", "url": "https://games-site.github.io/projects/cookie-clicker/index.html", "desc": "Bake an infinite amount of cookies." },
+    { "id": "2048", "name": "2048", "url": "https://games-site.github.io/projects/2048/index.html", "desc": "Slide tiles to reach 2048." },
+    { "id": "flappy", "name": "Flappy Bird", "url": "https://games-site.github.io/projects/flappy-bird/index.html", "desc": "Fly through the pipes." },
+    { "id": "mines", "name": "Minesweeper", "url": "https://games-site.github.io/projects/minesweeper/index.html", "desc": "Classic logic mine-clearing." },
+    { "id": "slope", "name": "Slope", "url": "https://games-site.github.io/projects/slope/index.html", "desc": "Roll down the infinite slope." }
+]
