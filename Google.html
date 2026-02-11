@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google</title>
+    <link rel="icon" type="image/png" href="https://www.google.com/favicon.ico">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #202124;
+            --search-bg: #ffffff;
+            --search-border: #dfe1e5;
+            --btn-bg: #f8f9fa;
+            --btn-text: #3c4043;
+            --link-color: #1a0dab;
+            --desc-color: #4d5156;
+            --app-hover: rgba(60, 64, 67, 0.1);
+            --icon-color: #5f6368;
+            --kill-btn: #d93025;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #202124;
+            --text-color: #e8eaed;
+            --search-bg: #303134;
+            --search-border: #5f6368;
+            --btn-bg: #3c4043;
+            --btn-text: #e8eaed;
+            --link-color: #8ab4f8;
+            --desc-color: #bdc1c6;
+            --app-hover: rgba(232, 234, 237, 0.12);
+            --icon-color: #e8eaed;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            font-family: 'arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        #app-launcher {
+            position: absolute;
+            top: 65px; right: 20px;
+            width: 320px;
+            max-height: 450px;
+            background: var(--bg-color);
+            border: 1px solid var(--search-border);
+            border-radius: 12px;
+            padding: 20px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #results-area { 
+            display: none; 
+            width: 100%; 
+            height: calc(100vh - 120px);
+            margin-top: 20px;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+
+        .results-content {
+            max-width: 652px;
+            margin-left: 175px; 
+            padding-bottom: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #app-launcher::-webkit-scrollbar, #results-area::-webkit-scrollbar { width: 8px; }
+        #app-launcher::-webkit-scrollbar-thumb, #results-area::-webkit-scrollbar-thumb { 
+            background: var(--search-border); 
+            border-radius: 10px; 
+        }
+
+        .game-frame {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            border: none;
+            display: none;
+            z-index: 9999;
+            background: #000;
+        }
+        .game-frame.active { display: block; }
+
+        .top-nav {
+            position: absolute;
+            top: 0; right: 0;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .icon-btn {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .icon-btn:hover { background: var(--app-hover); }
+        .icon-btn svg { fill: var(--icon-color); width: 24px; height: 24px; }
+
+        #google-home {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .logo { width: 272px; margin-bottom: 30px; cursor: pointer; }
+
+        .search-container {
+            width: 100%;
+            max-width: 584px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-box-wrapper { position: relative; width: 100%; }
+
+        #searchBar {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 24px;
+            border: 1px solid var(--search-border);
+            background: var(--search-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .search-icon {
+            position: absolute; left: 15px; top: 12px;
+            width: 20px; opacity: 0.5;
+        }
+
+        .button-row { margin-top: 30px; display: flex; gap: 12px; }
+
+        .btn {
+            background-color: var(--btn-bg);
+            border: 1px solid var(--btn-bg);
+            border-radius: 4px;
+            color: var(--btn-text);
+            font-size: 14px;
+            padding: 0 16px;
+            line-height: 34px;
+            height: 36px;
+            cursor: pointer;
+        }
+
+        body.searching #google-home { justify-content: flex-start; padding-top: 20px; align-items: flex-start; padding-left: 20px; }
+        body.searching .logo { width: 92px; position: absolute; left: 20px; top: 25px; margin-bottom: 0; }
+        body.searching .search-container { max-width: 690px; margin-left: 155px; } 
+        body.searching .button-row { display: none; }
+        body.searching #results-area { display: block; }
+
+        .result-item { margin-bottom: 28px; order: 2; }
+        .result-item.active-res { order: 1 !important; }
+        
+        .result-title { 
+            font-size: 20px; 
+            color: var(--link-color); 
+            display: inline-block; 
+            cursor: pointer; 
+            text-decoration: none;
+            margin-bottom: 3px;
+        }
+        .result-title:hover { text-decoration: underline; }
+        
+        .result-url { font-size: 14px; color: var(--desc-color); display: block; margin-bottom: 2px; }
+        .result-desc { font-size: 14px; color: var(--desc-color); line-height: 1.5; cursor: text; user-select: text; }
+
+        .kill-btn {
+            background: var(--kill-btn);
+            color: white;
+            border: none; border-radius: 4px;
+            font-size: 10px; padding: 4px 8px;
+            cursor: pointer; margin-top: 8px; display: none;
+        }
+
+        .app-card { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 10px; border-radius: 8px; order: 2; }
+        .app-card.active-app { order: 1 !important; border: 1px solid var(--link-color); background: var(--app-hover); }
+        .app-card:hover { background: var(--app-hover); }
+        .app-card span { font-size: 11px; margin-top: 5px; color: var(--text-color); text-align: center; overflow: hidden; text-overflow: ellipsis; width: 100%; white-space: nowrap;}
+        .app-icon { width: 32px; height: 32px; border-radius: 8px; }
+
+        .ui-overlay { 
+            position: fixed; top: 15px; right: 15px; z-index: 10000; 
+            display: none; gap: 10px;
+        }
+        .ctrl-btn { 
+            background: rgba(0,0,0,0.7); color: white; border: 1px solid #444; 
+            padding: 10px 20px; border-radius: 6px; cursor: pointer; 
+            backdrop-filter: blur(5px); font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav" id="google-nav">
+        <div class="icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+            <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+        </div>
+        <div class="icon-btn" onclick="toggleLauncher()" title="Game Launcher">
+            <svg viewBox="0 0 24 24"><path d="M6 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM6 14c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM6 20c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+        </div>
+    </div>
+
+    <div id="app-launcher"></div>
+
+    <div class="ui-overlay" id="game-controls">
+        <button class="ctrl-btn" onclick="goHome()">Back to Google 🏠</button>
+        <button class="ctrl-btn" onclick="reloadActive()">Reload ♻️</button>
+    </div>
+
+    <div id="iframe-container"></div>
+
+    <div id="main-wrapper">
+        <div id="google-home">
+            <img class="logo" id="google-logo" onclick="goHome()" src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" alt="Google">
+            <div class="search-container">
+                <div class="search-box-wrapper">
+                    <img class="search-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z' fill='%239AA0A6'/></svg>">
+                    <input type="text" id="searchBar" oninput="handleSearchInput()" onkeydown="handleEnter(event)" autocomplete="off">
+                </div>
+                <div class="button-row">
+                    <button class="btn" onclick="handleSearchInput()">Google Search</button>
+                    <button class="btn" onclick="luckyLaunch()">I'm Feeling Lucky</button>
+                </div>
+            </div>
+            <div id="results-area">
+                <div class="results-content" id="gameResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const games = [
+            { id: 'fnf', name: 'Friday Night Funkin', url: 'https://fridaynight-funkin.github.io/f88/friday-night-funkin', desc: 'Get freaky on a Friday night with this rhythmic music battle game.' },
+            { id: 'mario', name: 'Super Mario', url: 'https://games-site.github.io/projects/mario/index.html', desc: 'The classic platforming adventure.' },
+            { id: 'paperio', name: 'Paper.io 2', url: 'https://games-site.github.io/projects/paperio2/index.html', desc: 'Conquer as much territory as possible.' },
+            { id: 'pacman', name: 'Pac-Man', url: 'https://games-site.github.io/projects/pacman/index.html', desc: 'Navigate the maze and eat the dots.' },
+            { id: 'ballsort', name: 'Ball Sort Puzzle', url: 'https://games-site.github.io/projects/ball-sort-puzzle/index.html', desc: 'Sort the colored balls in the tubes.' },
+            { id: 'cookie', name: 'Cookie Clicker', url: 'https://games-site.github.io/projects/cookie-clicker/index.html', desc: 'Bake an infinite amount of cookies.' },
+            { id: 'coreball', name: 'Core Ball', url: 'https://games-site.github.io/projects/core-ball/index.html', desc: 'Test your timing and precision.' },
+            { id: 'deathrun', name: 'Death Run 3D', url: 'https://games-site.github.io/projects/death-run-3d/index.html', desc: 'Fast-paced tube runner.' },
+            { id: 'drifthunters', name: 'Drift Hunters', url: 'https://games-site.github.io/projects/drift-hunters/index.html', desc: 'Detailed 3D drifting simulator.' },
+            { id: 'alc2', name: 'Little Alchemy 2', url: 'https://gamingshitposting.github.io/ext-bin-1/littlealchemy2.com/index.html', desc: 'Mix elements and create the world.' },
+            { id: 'totm', name: 'Tomb of the Mask', url: 'https://gamingshitposting.github.io/ext-bin-1/web-portal-testing.pg.io/4yuEwaHwXK74EMazDK9Z7rl32xa9w0Pf/totm/latest/index.html', desc: 'Explore a vertical labyrinth.' },
+            { id: 'eagler', name: 'Eaglercraft 1.8', url: 'https://gamingshitposting.github.io/ext-bin-1/games/EaglercraftX_1.8_u27_Offline_Signed.html', desc: 'Browser-based voxel survival.' },
+            { id: 'stack', name: 'Stack', url: 'https://gamingshitposting.github.io/ext-bin-1/games/stack/index.html', desc: 'Stack blocks to reach the sky.' },
+            { id: 'alc1', name: 'Little Alchemy', url: 'https://sciencemathedu.github.io/littlealchemy/', desc: 'Original element logic game.' },
+            { id: '2048', name: '2048', url: 'https://games-site.github.io/projects/2048/index.html', desc: 'Slide tiles to reach 2048.' },
+            { id: 'bitlife', name: 'BitLife', url: 'https://games-site.github.io/projects/bitlife/index.html', desc: 'Simulate an entire life.' },
+            { id: 'doodle', name: 'Doodle Jump', url: 'https://games-site.github.io/projects/doodle-jump/index.html', desc: 'Classic endless jumper.' },
+            { id: 'drift-boss', name: 'Drift Boss', url: 'https://games-site.github.io/projects/drift-boss/index.html', desc: 'Drifting car physics game.' },
+            { id: 'flappy', name: 'Flappy Bird', url: 'https://games-site.github.io/projects/flappy-bird/index.html', desc: 'Fly through the pipes.' },
+            { id: 'feud', name: 'Google Feud', url: 'https://games-site.github.io/projects/google-feud/index.html', desc: 'Autocomplete guessing game.' },
+            { id: 'mines', name: 'Minesweeper', url: 'https://games-site.github.io/projects/minesweeper/index.html', desc: 'Classic logic mine-clearing.' },
+            { id: 'doge', name: 'Save the Doge', url: 'https://games-site.github.io/projects/save-the-doge/index.html', desc: 'Protect the doge from bees.' }
+        ];
+
+        let activeId = null;
+        let activeApps = new Set();
+        let isInternalNav = false;
+
+        function init() {
+            const savedTheme = localStorage.getItem('google-theme') || 'light';
+            setTheme(savedTheme);
+
+            const launcher = document.getElementById('app-launcher');
+            const results = document.getElementById('gameResults');
+            const ifrContainer = document.getElementById('iframe-container');
+
+            games.forEach((game, index) => {
+                const app = document.createElement('div');
+                app.className = 'app-card';
+                app.id = `card-${game.id}`;
+                app.style.order = index + 10;
+                app.innerHTML = `
+                    <div onclick="launch('${game.id}')" style="display:flex; flex-direction:column; align-items:center; width: 100%;">
+                        <div class="app-icon" style="background:hsl(${Math.random()*360}, 65%, 50%)"></div>
+                        <span>${game.name}</span>
+                    </div>
+                    <button class="kill-btn" id="kill-card-${game.id}" onclick="killGame('${game.id}', event)">End Task</button>`;
+                launcher.appendChild(app);
+
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.id = `result-${game.id}`;
+                item.style.order = index + 10;
+                item.innerHTML = `
+                    <span class="result-url">google.com › games › ${game.id}</span>
+                    <span class="result-title" onclick="launch('${game.id}')">${game.name}</span>
+                    <div class="result-desc">${game.desc}</div>
+                    <button class="kill-btn" id="kill-res-${game.id}" onclick="killGame('${game.id}', event)">End Task</button>`;
+                results.appendChild(item);
+
+                const ifr = document.createElement('iframe');
+                ifr.id = `frame-${game.id}`;
+                ifr.className = 'game-frame';
+                ifr.allow = "fullscreen; gamepad; keyboard-lock";
+                ifrContainer.appendChild(ifr);
+            });
+
+            window.addEventListener('hashchange', checkHash);
+            checkHash();
+        }
+
+        function checkHash() {
+            if (isInternalNav) { isInternalNav = false; return; }
+            const hash = window.location.hash;
+            if (hash.startsWith('#game/')) {
+                launch(hash.split('/')[1], false);
+            } else if (hash.startsWith('#search/')) {
+                const query = decodeURIComponent(hash.split('/')[1]);
+                document.getElementById('searchBar').value = query;
+                applySearch(query);
+            } else {
+                goHome(false);
+            }
+        }
+
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            const logo = document.getElementById('google-logo');
+            logo.src = theme === 'dark' ? 
+                "https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png" : 
+                "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
+            localStorage.setItem('google-theme', theme);
+        }
+
+        function toggleDarkMode() {
+            setTheme(document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+        }
+
+        function toggleLauncher() {
+            const l = document.getElementById('app-launcher');
+            l.style.display = l.style.display === 'grid' ? 'none' : 'grid';
+        }
+
+        function goHome(pushHash = true) {
+            document.body.classList.remove('searching');
+            document.getElementById('searchBar').value = '';
+            document.querySelectorAll('.game-frame').forEach(f => f.classList.remove('active'));
+            document.getElementById('google-nav').style.display = 'flex';
+            document.getElementById('game-controls').style.display = 'none';
+            activeId = null;
+            if (pushHash) { isInternalNav = true; window.location.hash = ""; }
+        }
+
+        function handleSearchInput() {
+            const query = document.getElementById('searchBar').value;
+            if (query) {
+                isInternalNav = true;
+                window.location.hash = `search/${encodeURIComponent(query)}`;
+                applySearch(query);
+            } else {
+                goHome();
+            }
+        }
+
+        function applySearch(query) {
+            const q = query.toLowerCase();
+            document.body.classList.add('searching');
+            document.querySelectorAll('.result-item').forEach(item => {
+                item.style.display = item.innerText.toLowerCase().includes(q) ? 'block' : 'none';
+            });
+        }
+
+        function launch(id, pushHash = true) {
+            const ifr = document.getElementById(`frame-${id}`);
+            if (!ifr.src || ifr.src === "about:blank") ifr.src = games.find(g => g.id === id).url;
+            
+            document.querySelectorAll('.game-frame').forEach(f => f.classList.remove('active'));
+            ifr.classList.add('active');
+            
+            document.getElementById('google-nav').style.display = 'none';
+            document.getElementById('game-controls').style.display = 'flex';
+            document.getElementById('app-launcher').style.display = 'none';
+            
+            activeApps.add(id);
+            updateOrder(id, true);
+            
+            document.getElementById(`kill-card-${id}`).style.display = 'block';
+            document.getElementById(`kill-res-${id}`).style.display = 'block';
+            
+            activeId = id;
+            if (pushHash) { isInternalNav = true; window.location.hash = `game/${id}`; }
+            ifr.focus();
+        }
+
+        function updateOrder(id, isActive) {
+            const card = document.getElementById(`card-${id}`);
+            const res = document.getElementById(`result-${id}`);
+            if (isActive) {
+                card.classList.add('active-app'); res.classList.add('active-res');
+                card.style.order = "1"; res.style.order = "1";
+            } else {
+                card.classList.remove('active-app'); res.classList.remove('active-res');
+                const idx = games.findIndex(g => g.id === id);
+                card.style.order = idx + 10; res.style.order = idx + 10;
+            }
+        }
+
+        function killGame(id, event) {
+            if(event) event.stopPropagation();
+            const ifr = document.getElementById(`frame-${id}`);
+            ifr.src = "about:blank";
+            ifr.classList.remove('active');
+            activeApps.delete(id);
+            updateOrder(id, false);
+            document.getElementById(`kill-card-${id}`).style.display = 'none';
+            document.getElementById(`kill-res-${id}`).style.display = 'none';
+            if (activeId === id) goHome();
+        }
+
+        function reloadActive() {
+            if (activeId) {
+                const f = document.getElementById(`frame-${activeId}`);
+                const s = f.src; f.src = 'about:blank'; setTimeout(() => f.src = s, 50);
+            }
+        }
+
+        function handleEnter(e) {
+            if (e.key === "Enter") {
+                const visible = Array.from(document.querySelectorAll('.result-item'))
+                    .filter(i => i.style.display !== 'none')
+                    .sort((a, b) => a.style.order - b.style.order);
+                if (visible.length > 0) visible[0].querySelector('.result-title').click();
+            }
+        }
+
+        function luckyLaunch() {
+            launch(games[Math.floor(Math.random() * games.length)].id);
+        }
+
+        init();
+    </script>
+</body>
+</html>
