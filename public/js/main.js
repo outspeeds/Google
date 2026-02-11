@@ -4,13 +4,14 @@ let activeApps = new Set();
 let isInternalNav = false;
 
 async function init() {
-    const savedTheme = localStorage.getItem('google-theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
     
     // Load games from API
     try {
         const response = await fetch('/api/games');
         games = await response.json();
+        console.log('Loaded games:', games);
         renderGames();
     } catch (error) {
         console.error('Failed to load games:', error);
@@ -24,6 +25,11 @@ function renderGames() {
     const launcher = document.getElementById('app-launcher');
     const results = document.getElementById('gameResults');
     const ifrContainer = document.getElementById('iframe-container');
+    
+    if (!launcher || !results || !ifrContainer) {
+        console.error('Required DOM elements not found');
+        return;
+    }
     
     games.forEach((game, index) => {
         const app = document.createElement('div');
@@ -77,14 +83,17 @@ function checkHash() {
 function setTheme(theme) {
     document.body.setAttribute('data-theme', theme);
     const logo = document.getElementById('google-logo');
-    logo.src = theme === 'dark' ? 
-        "https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png" : 
-        "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
-    localStorage.setItem('google-theme', theme);
+    if (logo) {
+        logo.src = theme === 'dark' ? 
+            "https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png" : 
+            "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
+    }
+    localStorage.setItem('theme', theme);
 }
 
 function toggleDarkMode() {
-    setTheme(document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+    const currentTheme = document.body.getAttribute('data-theme');
+    setTheme(currentTheme === 'light' ? 'dark' : 'light');
 }
 
 function toggleLauncher() {

@@ -59,14 +59,12 @@ body, html {
     color: var(--text-color);
 }
 
-.gmail-logo svg {
-    width: 40px;
-    height: 40px;
+.google-logo-img {
+    height: 30px;
 }
 
-.gmail-logo span {
-    font-size: 22px;
-    color: #5f6368;
+[data-theme="dark"] .google-logo-img {
+    content: url('https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_92x30dp.png');
 }
 
 .search-box {
@@ -138,6 +136,8 @@ body, html {
     border-right: 1px solid var(--border-color);
     padding: 8px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .compose-btn {
@@ -185,6 +185,7 @@ body, html {
     margin-top: 20px;
     padding-top: 12px;
     border-top: 1px solid var(--border-color);
+    flex: 1;
 }
 
 .users-list h3 {
@@ -209,6 +210,66 @@ body, html {
     height: 8px;
     border-radius: 50%;
     background: #34a853;
+}
+
+.username-display {
+    margin-top: auto;
+    padding: 12px 8px 8px 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.username-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.username-info:hover {
+    background: var(--message-bg);
+}
+
+.username-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    flex-shrink: 0;
+}
+
+.username-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.username-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.change-username-btn {
+    background: none;
+    border: none;
+    color: #1a73e8;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 2px;
+    text-align: left;
+}
+
+.change-username-btn:hover {
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .change-username-btn {
+    color: #8ab4f8;
 }
 
 /* Chat Area */

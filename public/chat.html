@@ -11,8 +11,8 @@
     <!-- Username Modal -->
     <div class="modal active" id="usernameModal">
         <div class="modal-content">
-            <h2>Sign in to Gmail</h2>
-            <p>Enter your username to continue</p>
+            <h2 id="modalTitle">Sign in to Gmail</h2>
+            <p id="modalSubtitle">Enter your username to continue</p>
             <div class="error-message" id="errorMessage" style="display: none;"></div>
             <input type="text" id="usernameInput" placeholder="Username" maxlength="20" autocomplete="off">
             <div class="modal-actions">
@@ -23,24 +23,17 @@
 
     <!-- Gmail Header -->
     <div class="gmail-header">
+        <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+            <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+        </button>
         <a href="/" class="gmail-logo">
-            <svg viewBox="0 0 40 40" fill="none">
-                <path d="M20 0L0 10v20l20 10 20-10V10L20 0z" fill="#EA4335"/>
-                <path d="M0 10l20 10V0L0 10z" fill="#FBBC04"/>
-                <path d="M40 10L20 0v20l20-10z" fill="#34A853"/>
-                <path d="M20 40l20-10V10L20 20v20z" fill="#4285F4"/>
-                <path d="M0 30l20-10v20L0 30z" fill="#C5221F"/>
-            </svg>
-            <span>Gmail</span>
+            <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" class="google-logo-img" id="headerLogo">
         </a>
         <div class="search-box">
             <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
             <input type="text" placeholder="Search mail">
         </div>
         <div class="header-right">
-            <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle theme">
-                <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
-            </button>
         </div>
     </div>
 
@@ -48,11 +41,6 @@
     <div class="gmail-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <button class="compose-btn">
-                <svg width="36" height="36" viewBox="0 0 36 36"><path fill="#34A853" d="M16 16v14h4V20z"/><path fill="#4285F4" d="M30 16H20l-4 4h14z"/><path fill="#FBBC04" d="M6 16v4h10l4-4z"/><path fill="#EA4335" d="M20 16V6h-4v14z"/><path fill="none" d="M0 0h36v36H0z"/></svg>
-                Compose
-            </button>
-            
             <div class="sidebar-item active">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="#5f6368"><path d="M16 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H4V6l6 3.5L16 6v10zm-6-7L4 4h12l-6 5z"/></svg>
                 Inbox
@@ -71,6 +59,16 @@
             <div class="users-list">
                 <h3>Online Users</h3>
                 <div id="activeUsers"></div>
+            </div>
+
+            <div class="username-display" id="usernameDisplay">
+                <div class="username-info">
+                    <div class="username-avatar"></div>
+                    <div class="username-text">
+                        <div class="username-name" id="displayUsername">Guest</div>
+                        <button class="change-username-btn" onclick="showUsernameChange()">Change username</button>
+                    </div>
+                </div>
             </div>
         </div>
 

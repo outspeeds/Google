@@ -8,16 +8,39 @@ let messageOffset = 0;
 const MESSAGE_BATCH_SIZE = 30;
 let typingTimeout;
 
-// Theme management
+// Theme management - synced with main page
 function toggleDarkMode() {
     const currentTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', currentTheme);
-    localStorage.setItem('chat-theme', currentTheme);
+    setTheme(currentTheme);
+}
+
+function setTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    
+    // Update header logo
+    const logo = document.getElementById('headerLogo');
+    if (logo) {
+        logo.src = theme === 'dark' ? 
+            'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_92x30dp.png' : 
+            'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png';
+    }
 }
 
 function initTheme() {
-    const savedTheme = localStorage.getItem('chat-theme') || 'light';
-    document.body.setAttribute('data-theme', savedTheme);
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+}
+
+// Check for saved username
+function checkSavedUsername() {
+    const savedUsername = localStorage.getItem('chatUsername');
+    if (savedUsername) {
+        // Hide modal while trying to auto-login
+        document.getElementById('usernameModal').classList.remove('active');
+        // Try to register with saved username
+        socket.emit('register', savedUsername);
+    }
 }
 
 // Username registration
@@ -47,10 +70,21 @@ function registerUsername() {
     socket.emit('register', name);
 }
 
+// Show username change modal
+function showUsernameChange() {
+    document.getElementById('modalTitle').textContent = 'Change username';
+    document.getElementById('modalSubtitle').textContent = 'Enter a new username';
+    document.getElementById('usernameModal').classList.add('active');
+    document.getElementById('usernameInput').value = '';
+    document.getElementById('errorMessage').style.display = 'none';
+}
+
 // Socket event listeners
 socket.on('register-success', (name) => {
     username = name;
+    localStorage.setItem('chatUsername', name);
     document.getElementById('usernameModal').classList.remove('active');
+    document.getElementById('displayUsername').textContent = name;
     loadInitialMessages();
 });
 
@@ -58,6 +92,10 @@ socket.on('register-failed', (error) => {
     const errorMsg = document.getElementById('errorMessage');
     errorMsg.textContent = error;
     errorMsg.style.display = 'block';
+    // Show modal if it was hidden during auto-login
+    document.getElementById('modalTitle').textContent = 'Sign in to Gmail';
+    document.getElementById('modalSubtitle').textContent = 'Enter your username to continue';
+    document.getElementById('usernameModal').classList.add('active');
 });
 
 socket.on('new-message', (message) => {
@@ -335,3 +373,4 @@ function escapeHtml(text) {
 
 // Initialize
 initTheme();
+checkSavedUsername();
