@@ -5,48 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google</title>
     <link rel="icon" type="image/png" href="https://www.google.com/favicon.ico">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-
     <div class="top-nav" id="google-nav">
-        <a class="gmail-link" onclick="toggleChat()">Gmail</a>
-        <a class="gmail-link">Images</a>
-        <div class="icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-            <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+        <div class="nav-left">
+            <a href="/chat.html" class="nav-link">Gmail</a>
+            <a href="#" class="nav-link">Images</a>
         </div>
-        <div class="icon-btn" onclick="toggleLauncher()" title="Apps">
-            <svg viewBox="0 0 24 24"><path d="M6 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM6 14c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM6 20c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+        <div class="nav-right">
+            <div class="icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+            </div>
+            <div class="icon-btn" onclick="toggleLauncher()" title="Game Launcher">
+                <svg viewBox="0 0 24 24"><path d="M6 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM6 14c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM6 20c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+            </div>
         </div>
     </div>
-
     <div id="app-launcher"></div>
-
-    <div id="chat-container">
-        <div class="chat-header" onclick="toggleChat()">
-            <span>New Message</span>
-            <span>✕</span>
-        </div>
-        <div id="chat-messages"></div>
-        <div id="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Send a message..." autocomplete="off">
-        </div>
-    </div>
-
     <div class="ui-overlay" id="game-controls">
         <button class="ctrl-btn" onclick="goHome()">Back to Google 🏠</button>
         <button class="ctrl-btn" onclick="reloadActive()">Reload ♻️</button>
     </div>
-
     <div id="iframe-container"></div>
-
     <div id="main-wrapper">
         <div id="google-home">
             <img class="logo" id="google-logo" onclick="goHome()" src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" alt="Google">
             <div class="search-container">
                 <div class="search-box-wrapper">
                     <img class="search-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z' fill='%239AA0A6'/></svg>">
-                    <input type="text" id="searchBar" oninput="handleSearchInput()" autocomplete="off">
+                    <input type="text" id="searchBar" oninput="handleSearchInput()" onkeydown="handleEnter(event)" autocomplete="off">
                 </div>
                 <div class="button-row">
                     <button class="btn" onclick="handleSearchInput()">Google Search</button>
@@ -58,286 +46,6 @@
             </div>
         </div>
     </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        let games = [];
-        let activeId = null;
-        let activeApps = new Set();
-        
-        // Chat variables
-        const socket = io();
-        let username = localStorage.getItem('chat_username') || "";
-        let msgOffset = 0;
-        let isLoadingMsgs = false;
-        let allLoaded = false;
-
-        async function init() {
-            // Load Games
-            const res = await fetch('games.json');
-            games = await res.json();
-            
-            const launcher = document.getElementById('app-launcher');
-            const results = document.getElementById('gameResults');
-            const ifrContainer = document.getElementById('iframe-container');
-
-            games.forEach((game, index) => {
-                // 1. Launcher Card
-                const app = document.createElement('div');
-                app.className = 'app-card';
-                app.id = `card-${game.id}`;
-                app.style.order = index + 10;
-                app.innerHTML = `
-                    <div onclick="launch('${game.id}')" style="display:flex; flex-direction:column; align-items:center; width: 100%;">
-                        <div class="app-icon" style="background:hsl(${Math.random()*360}, 65%, 50%)"></div>
-                        <span>${game.name}</span>
-                    </div>
-                    <button class="kill-btn" id="kill-card-${game.id}" onclick="killGame('${game.id}', event)">End Task</button>`;
-                launcher.appendChild(app);
-
-                // 2. Search Result
-                const item = document.createElement('div');
-                item.className = 'result-item';
-                item.id = `result-${game.id}`;
-                item.style.order = index + 10;
-                item.innerHTML = `
-                    <span class="result-url">google.com › games › ${game.id}</span>
-                    <span class="result-title" onclick="launch('${game.id}')">${game.name}</span>
-                    <div class="result-desc">${game.desc}</div>
-                    <button class="kill-btn" id="kill-res-${game.id}" onclick="killGame('${game.id}', event)">End Task</button>`;
-                results.appendChild(item);
-
-                // 3. Iframe
-                const ifr = document.createElement('iframe');
-                ifr.id = `frame-${game.id}`;
-                ifr.className = 'game-frame';
-                ifr.allow = "fullscreen; gamepad; keyboard-lock";
-                ifrContainer.appendChild(ifr);
-            });
-
-            checkHash();
-            window.addEventListener('hashchange', checkHash);
-            
-            // Setup scroll listener for infinite load
-            document.getElementById('chat-messages').addEventListener('scroll', handleChatScroll);
-            
-            // Set theme
-            const savedTheme = localStorage.getItem('google-theme') || 'light';
-            setTheme(savedTheme);
-        }
-
-        /* --- Chat Logic --- */
-        function toggleChat() {
-            const chat = document.getElementById('chat-container');
-            if (chat.style.display === 'flex') {
-                chat.style.display = 'none';
-            } else {
-                if (!username) {
-                    username = prompt("Sign in - Enter Username:");
-                    if (!username) return;
-                    localStorage.setItem('chat_username', username);
-                    loadMessages(); // Load initial batch
-                } else if (msgOffset === 0) {
-                    loadMessages();
-                }
-                chat.style.display = 'flex';
-                // Focus input
-                setTimeout(() => document.getElementById('chat-input').focus(), 100);
-            }
-        }
-
-        async function loadMessages() {
-            if (isLoadingMsgs || allLoaded) return;
-            isLoadingMsgs = true;
-            
-            const container = document.getElementById('chat-messages');
-            // Save scroll height before loading to maintain position
-            const oldScrollHeight = container.scrollHeight;
-            const oldScrollTop = container.scrollTop;
-
-            const res = await fetch(`/api/messages?offset=${msgOffset}`);
-            const data = await res.json();
-            
-            if (data.messages.length === 0) {
-                allLoaded = true;
-                const sys = document.createElement('div');
-                sys.className = 'system-msg';
-                sys.innerText = '--- Start of conversation ---';
-                container.prepend(sys);
-            } else {
-                // Prepend messages (reverse because they come oldest first in the chunk)
-                // Actually the server gives us a slice [start, end].
-                // We want to render them such that the newest is at the bottom.
-                
-                // If offset is 0 (initial load), we scroll to bottom.
-                // If offset > 0 (history), we maintain scroll position.
-                
-                data.messages.reverse().forEach(msg => appendMessage(msg, true));
-                msgOffset += data.messages.length;
-                
-                if (msgOffset === data.messages.length) {
-                    // This was the first load, scroll to bottom
-                    container.scrollTop = container.scrollHeight;
-                } else {
-                    // This was a history load, adjust scroll
-                    container.scrollTop = container.scrollHeight - oldScrollHeight + oldScrollTop;
-                }
-            }
-            isLoadingMsgs = false;
-        }
-
-        function appendMessage(msg, prepend = false) {
-            const container = document.getElementById('chat-messages');
-            const div = document.createElement('div');
-            div.className = 'chat-msg';
-            const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            div.innerHTML = `<b>${msg.user}</b>${msg.text} <span class="time">${time}</span>`;
-            
-            if (prepend) container.prepend(div);
-            else container.appendChild(div);
-        }
-
-        function handleChatScroll(e) {
-            if (e.target.scrollTop === 0) {
-                loadMessages();
-            }
-        }
-
-        document.getElementById('chat-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.target.value.trim() !== "") {
-                socket.emit('chat message', { user: username, text: e.target.value });
-                e.target.value = '';
-            }
-        });
-
-        socket.on('chat message', (msg) => {
-            const container = document.getElementById('chat-messages');
-            appendMessage(msg, false);
-            // Auto scroll if near bottom
-            if (container.scrollHeight - container.scrollTop < 500) {
-                container.scrollTop = container.scrollHeight;
-            }
-            // Increment offset so we don't load this duplicates next time we scroll up
-            msgOffset++; 
-        });
-
-
-        /* --- Standard Game Logic --- */
-        function checkHash() {
-            const hash = window.location.hash;
-            if (hash.startsWith('#game/')) {
-                launch(hash.split('/')[1]);
-            } else if (hash.startsWith('#search/')) {
-                const query = decodeURIComponent(hash.split('/')[1]);
-                document.getElementById('searchBar').value = query;
-                applySearch(query);
-            } else {
-                goHome();
-            }
-        }
-
-        function setTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-            const logo = document.getElementById('google-logo');
-            logo.src = theme === 'dark' ? 
-                "https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png" : 
-                "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
-            localStorage.setItem('google-theme', theme);
-        }
-
-        function toggleDarkMode() {
-            setTheme(document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
-        }
-
-        function toggleLauncher() {
-            const l = document.getElementById('app-launcher');
-            l.style.display = l.style.display === 'grid' ? 'none' : 'grid';
-        }
-
-        function goHome() {
-            document.body.classList.remove('searching');
-            document.getElementById('searchBar').value = '';
-            document.querySelectorAll('.game-frame').forEach(f => f.classList.remove('active'));
-            document.getElementById('google-nav').style.display = 'flex';
-            document.getElementById('game-controls').style.display = 'none';
-            document.getElementById('app-launcher').style.display = 'none';
-            activeId = null;
-            history.pushState(null, null, ' ');
-        }
-
-        function handleSearchInput() {
-            const query = document.getElementById('searchBar').value;
-            if (query) {
-                window.location.hash = `search/${encodeURIComponent(query)}`;
-            } else {
-                goHome();
-            }
-        }
-
-        function applySearch(query) {
-            const q = query.toLowerCase();
-            document.body.classList.add('searching');
-            document.querySelectorAll('.result-item').forEach(item => {
-                item.style.display = item.innerText.toLowerCase().includes(q) ? 'block' : 'none';
-            });
-        }
-
-        function launch(id) {
-            const ifr = document.getElementById(`frame-${id}`);
-            if (!ifr.src || ifr.src === "about:blank") ifr.src = games.find(g => g.id === id).url;
-            
-            document.querySelectorAll('.game-frame').forEach(f => f.classList.remove('active'));
-            ifr.classList.add('active');
-            
-            document.getElementById('google-nav').style.display = 'none';
-            document.getElementById('game-controls').style.display = 'flex';
-            document.getElementById('app-launcher').style.display = 'none';
-            document.getElementById('chat-container').style.display = 'none'; // Hide chat in game
-            
-            activeApps.add(id);
-            updateOrder(id, true);
-            
-            document.getElementById(`kill-card-${id}`).style.display = 'block';
-            document.getElementById(`kill-res-${id}`).style.display = 'block';
-            
-            activeId = id;
-            ifr.focus();
-        }
-
-        function updateOrder(id, isActive) {
-            const card = document.getElementById(`card-${id}`);
-            const res = document.getElementById(`result-${id}`);
-            if (isActive) {
-                card.classList.add('active-app'); res.classList.add('active-res');
-            } else {
-                card.classList.remove('active-app'); res.classList.remove('active-res');
-            }
-        }
-
-        function killGame(id, event) {
-            if(event) event.stopPropagation();
-            const ifr = document.getElementById(`frame-${id}`);
-            ifr.src = "about:blank";
-            ifr.classList.remove('active');
-            activeApps.delete(id);
-            updateOrder(id, false);
-            document.getElementById(`kill-card-${id}`).style.display = 'none';
-            document.getElementById(`kill-res-${id}`).style.display = 'none';
-            if (activeId === id) goHome();
-        }
-
-        function reloadActive() {
-            if (activeId) {
-                const f = document.getElementById(`frame-${activeId}`);
-                const s = f.src; f.src = 'about:blank'; setTimeout(() => f.src = s, 50);
-            }
-        }
-
-        function luckyLaunch() {
-            launch(games[Math.floor(Math.random() * games.length)].id);
-        }
-
-        init();
-    </script>
+    <script src="/js/main.js"></script>
 </body>
 </html>
