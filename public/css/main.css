@@ -108,7 +108,7 @@ body, html {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    z-index: 100;
+    z-index: 103;
 }
 
 .nav-left {
@@ -124,11 +124,13 @@ body, html {
     opacity: 0.85;
     cursor: pointer;
     transition: opacity 0.2s;
+    padding: 8px 12px;
+    border-radius: 4px;
 }
 
 .nav-link:hover {
     opacity: 1;
-    text-decoration: underline;
+    background: var(--app-hover);
 }
 
 .nav-right {
@@ -170,6 +172,8 @@ body, html {
     width: 272px;
     margin-bottom: 30px;
     cursor: pointer;
+    position: relative;
+    z-index: 102;
 }
 
 .search-container {
@@ -183,6 +187,7 @@ body, html {
 .search-box-wrapper {
     position: relative;
     width: 100%;
+    z-index: 101;
 }
 
 #searchBar {
@@ -236,11 +241,14 @@ body.searching .logo {
     left: 20px;
     top: 25px;
     margin-bottom: 0;
+    z-index: 102;
 }
 
 body.searching .search-container {
     max-width: 690px;
     margin-left: 155px;
+    position: relative;
+    z-index: 101;
 }
 
 body.searching .button-row {
@@ -251,9 +259,64 @@ body.searching #results-area {
     display: block;
 }
 
+.search-categories {
+    display: none;
+    padding: 12px 0 0 155px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-color);
+    position: relative;
+    z-index: 101;
+}
+
+body.searching .search-categories {
+    display: flex;
+    gap: 24px;
+}
+
+.category-item {
+    padding: 12px 0;
+    font-size: 13px;
+    color: var(--desc-color);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.category-item:hover {
+    color: var(--text-color);
+}
+
+.category-item.active {
+    color: var(--link-color);
+    font-weight: 500;
+}
+
+.category-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--link-color);
+    border-radius: 3px 3px 0 0;
+}
+
+.category-icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
 .result-item {
     margin-bottom: 28px;
     order: 2;
+    position: relative;
+    z-index: 1;
 }
 
 .result-item.active-res {

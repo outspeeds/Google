@@ -192,15 +192,26 @@ io.on('connection', (socket) => {
             return;
         }
 
+        const oldUsername = activeUsers.get(socket.id);
         activeUsers.set(socket.id, username);
         socket.emit('register-success', username);
         
-        // Broadcast user joined
-        io.emit('user-joined', {
-            username,
-            timestamp: new Date().toISOString(),
-            activeUsers: Array.from(activeUsers.values())
-        });
+        if (oldUsername) {
+            // User changed their name
+            io.emit('user-name-changed', {
+                oldUsername,
+                newUsername: username,
+                timestamp: new Date().toISOString(),
+                activeUsers: Array.from(activeUsers.values())
+            });
+        } else {
+            // New user joined
+            io.emit('user-joined', {
+                username,
+                timestamp: new Date().toISOString(),
+                activeUsers: Array.from(activeUsers.values())
+            });
+        }
 
         console.log(`User registered: ${username}`);
     });

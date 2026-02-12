@@ -107,6 +107,16 @@ socket.on('user-joined', (data) => {
     updateActiveUsers(data.activeUsers);
 });
 
+socket.on('user-name-changed', (data) => {
+    addSystemMessage(`${data.oldUsername} changed their name to ${data.newUsername}`);
+    updateActiveUsers(data.activeUsers);
+    
+    // If this is the current user, update display
+    if (data.newUsername === username) {
+        document.getElementById('displayUsername').textContent = username;
+    }
+});
+
 socket.on('user-left', (data) => {
     addSystemMessage(`${data.username} left the chat`);
     updateActiveUsers(data.activeUsers);
