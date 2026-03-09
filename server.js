@@ -1,267 +1,292 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const multer = require('multer');
-const sharp = require('sharp');
-const path = require('path');
-const fs = require('fs').promises;
+const socket = io();
+let currentUsername = null;
+let currentImageUrl = null;
+let typingTimeout = null;
+let isHistoryLoaded = false; // Flag to delay system messages
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    },
-    maxHttpBufferSize: 10e6 // 10MB
-});
+const chatMessages = document.getElementById('chatMessages');
+const messageInput = document.getElementById('messageInput');
+const usernameModal = document.getElementById('usernameModal');
+const usernameInput = document.getElementById('usernameInput');
+const clearChatModal = document.getElementById('clearChatModal');
+const clearInput = document.getElementById('clearInput');
 
-const PORT = process.env.PORT || 3000;
-const SECRET_PHRASE = "admin123"; // Secret phrase for clearing messages
+// ==========================================
+// INITIALIZATION & LOADING
+// ==========================================
 
-// Middleware
-app.use(express.json());
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
-
-// Ensure directories exist
-const ensureDir = async (dir) => {
+async function loadInitialMessages() {
     try {
-        await fs.access(dir);
-    } catch {
-        await fs.mkdir(dir, { recursive: true });
-    }
-};
-
-(async () => {
-    await ensureDir('./data');
-    await ensureDir('./uploads');
-})();
-
-// File upload configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, './uploads');
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif|webp/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb(new Error('Only image files are allowed!'));
-    }
-});
-
-// Data file paths
-const MESSAGES_FILE = './data/messages.json';
-const GAMES_FILE = './data/games.json';
-
-// Initialize data files
-const initDataFiles = async () => {
-    try {
-        await fs.access(MESSAGES_FILE);
-    } catch {
-        await fs.writeFile(MESSAGES_FILE, JSON.stringify([]));
-    }
-    
-    try {
-        await fs.access(GAMES_FILE);
-    } catch {
-        const defaultGames = [
-            { id: 'mario', name: 'Super Mario', url: 'https://games-site.github.io/projects/mario/index.html', desc: 'The classic platforming adventure.' }
-            // ... (keep your other games here)
-        ];
-        await fs.writeFile(GAMES_FILE, JSON.stringify(defaultGames, null, 2));
-    }
-};
-
-initDataFiles();
-
-// Helper functions
-const readMessages = async () => {
-    const data = await fs.readFile(MESSAGES_FILE, 'utf8');
-    return JSON.parse(data);
-};
-
-const writeMessages = async (messages) => {
-    await fs.writeFile(MESSAGES_FILE, JSON.stringify(messages, null, 2));
-};
-
-// Track active users
-const activeUsers = new Map(); // socketId -> username
-
-// API Routes
-app.get('/api/games', async (req, res) => {
-    try {
-        const data = await fs.readFile(GAMES_FILE, 'utf8');
-        res.json(JSON.parse(data));
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to load games' });
-    }
-});
-
-app.get('/api/messages', async (req, res) => {
-    try {
-        const messages = await readMessages();
-        const limit = parseInt(req.query.limit) || 50;
-        const offset = parseInt(req.query.offset) || 0;
+        const response = await fetch('/api/messages?limit=50&offset=0');
+        const data = await response.json();
         
-        // Fix: Return messages chronologically 
-        const start = Math.max(0, messages.length - offset - limit);
-        const end = Math.max(0, messages.length - offset);
-        const paginatedMessages = messages.slice(start, end);
-        
-        res.json({
-            messages: paginatedMessages,
-            total: messages.length,
-            hasMore: start > 0
+        chatMessages.innerHTML = ''; 
+
+        data.messages.reverse().forEach(msg => {
+            chatMessages.appendChild(createMessageElement(msg));
         });
+        
+        // Mark history as loaded so system messages can now show up
+        isHistoryLoaded = true;
     } catch (error) {
-        res.status(500).json({ error: 'Failed to load messages' });
+        console.error('Failed to fetch initial messages:', error);
+    }
+}
+loadInitialMessages();
+
+// ==========================================
+// MODAL MANAGEMENT & DISMISSAL
+// ==========================================
+
+// Close modal when clicking on the dark background
+window.addEventListener('click', (event) => {
+    if (event.target.classList.contains('modal')) {
+        closeModal(event.target.id);
     }
 });
 
-// Image upload endpoint
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        const input = modal.querySelector('input');
+        if (input) input.value = ''; // Clear text box
+        
+        // Hide any errors specific to that modal
+        const err = modal.querySelector('.error-message');
+        if (err) err.style.display = 'none';
+    }
+}
+
+// ==========================================
+// USERNAME REGISTRATION
+// ==========================================
+
+function registerUsername() {
+    const val = usernameInput.value.trim();
+    if (!val) {
+        showError('usernameError', "Username cannot be empty");
+        return;
+    }
+    socket.emit('register', val);
+}
+
+function showUsernameChange() {
+    usernameModal.classList.add('active');
+    usernameInput.value = currentUsername || '';
+    usernameInput.focus();
+}
+
+function showError(elementId, msg) {
+    const err = document.getElementById(elementId);
+    err.textContent = msg;
+    err.style.display = 'block';
+}
+
+socket.on('register-success', (username) => {
+    currentUsername = username;
+    document.getElementById('displayUsername').textContent = username;
+    closeModal('usernameModal');
+});
+
+socket.on('register-failed', (msg) => {
+    showError('usernameError', msg);
+});
+
+// ==========================================
+// SENDING & RECEIVING MESSAGES
+// ==========================================
+
+function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text && !currentImageUrl) return;
+
+    socket.emit('send-message', {
+        text: text,
+        imageUrl: currentImageUrl
+    });
+
+    messageInput.value = '';
+    removeImagePreview();
+    socket.emit('stop-typing');
+}
+
+messageInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+socket.on('new-message', (msg) => {
+    const msgElement = createMessageElement(msg);
+    chatMessages.prepend(msgElement); 
+});
+
+function createMessageElement(msg) {
+    const div = document.createElement('div');
+    div.className = 'message ' + (msg.username === currentUsername ? 'my-message' : '');
+    
+    let timeString = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    let imageHtml = '';
+    if (msg.imageUrl) {
+        imageHtml = `<img src="${msg.imageUrl}" class="message-image" alt="Image attachment" onclick="window.open('${msg.imageUrl}', '_blank')">`;
+    }
+
+    div.innerHTML = `
+        <div class="message-header">
+            <span class="message-username">${msg.username}</span>
+            <span class="message-time">${timeString}</span>
+        </div>
+        <div class="message-content">
+            ${msg.text.replace(/\n/g, '<br>')}
+            ${imageHtml}
+        </div>
+    `;
+    return div;
+}
+
+// ==========================================
+// SYSTEM MESSAGES (JOIN/LEFT)
+// ==========================================
+
+function addSystemMessage(text) {
+    if (!isHistoryLoaded) return; // Wait until old messages are loaded
+    
+    const div = document.createElement('div');
+    div.className = 'system-message';
+    div.textContent = text;
+    // Prepend drops it at the very bottom of the chat visually
+    chatMessages.prepend(div);
+}
+
+// ==========================================
+// CLEAR MESSAGES LOGIC
+// ==========================================
+
+function showClearChatModal() {
+    clearChatModal.classList.add('active');
+    clearInput.focus();
+}
+
+function submitClearChat() {
+    const secret = clearInput.value.trim();
+    if (!secret) {
+        showError('clearError', "Please enter a phrase.");
+        return;
+    }
+    socket.emit('clear-messages', secret);
+}
+
+// Listen for custom server errors related to clearing the chat
+socket.on('error', (msg) => {
+    if (clearChatModal.classList.contains('active')) {
+        showError('clearError', msg);
+    } else {
+        alert(msg);
+    }
+});
+
+socket.on('messages-cleared', () => {
+    chatMessages.innerHTML = '';
+    closeModal('clearChatModal');
+});
+
+// ==========================================
+// IMAGE UPLOAD LOGIC
+// ==========================================
+
+async function handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
-
-        const outputPath = `./uploads/compressed-${req.file.filename}`;
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
         
-        await sharp(req.file.path)
-            .resize(1200, 1200, {
-                fit: 'inside',
-                withoutEnlargement: true
-            })
-            .jpeg({ quality: 80 })
-            .toFile(outputPath);
-
-        await fs.unlink(req.file.path);
-
-        const imageUrl = `/uploads/compressed-${req.file.filename}`;
-        res.json({ imageUrl });
-    } catch (error) {
-        console.error('Upload error:', error);
-        res.status(500).json({ error: 'Failed to process image' });
+        if (data.imageUrl) {
+            currentImageUrl = data.imageUrl;
+            document.getElementById('previewImage').src = data.imageUrl;
+            document.getElementById('imagePreview').style.display = 'block';
+        }
+    } catch (err) {
+        alert('Failed to upload image');
     }
+}
+
+function removeImagePreview() {
+    currentImageUrl = null;
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('imageInput').value = '';
+}
+
+// ==========================================
+// TYPING INDICATORS & ACTIVE USERS
+// ==========================================
+
+messageInput.addEventListener('input', () => {
+    socket.emit('typing');
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        socket.emit('stop-typing');
+    }, 1000);
 });
 
-// Socket.IO connection handling
-io.on('connection', (socket) => {
-    console.log('New client connected:', socket.id);
-
-    socket.on('register', (username) => {
-        const existingUser = Array.from(activeUsers.values()).find(u => u === username);
-        
-        if (existingUser) {
-            socket.emit('register-failed', 'Username already taken');
-            return;
-        }
-
-        const oldUsername = activeUsers.get(socket.id);
-        activeUsers.set(socket.id, username);
-        socket.emit('register-success', username);
-        
-        if (oldUsername) {
-            io.emit('user-name-changed', {
-                oldUsername,
-                newUsername: username,
-                timestamp: new Date().toISOString(),
-                activeUsers: Array.from(activeUsers.values())
-            });
-        } else {
-            io.emit('user-joined', {
-                username,
-                timestamp: new Date().toISOString(),
-                activeUsers: Array.from(activeUsers.values())
-            });
-        }
-    });
-
-    socket.on('send-message', async (data) => {
-        const username = activeUsers.get(socket.id);
-        
-        if (!username) {
-            socket.emit('error', 'Not registered');
-            return;
-        }
-
-        const message = {
-            id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-            username,
-            text: data.text,
-            imageUrl: data.imageUrl || null,
-            timestamp: new Date().toISOString()
-        };
-
-        try {
-            const messages = await readMessages();
-            messages.push(message);
-            await writeMessages(messages);
-
-            io.emit('new-message', message);
-        } catch (error) {
-            console.error('Error saving message:', error);
-            socket.emit('error', 'Failed to send message');
-        }
-    });
-
-    // Handle clearing messages with the secret phrase
-    socket.on('clear-messages', async (secretPhrase) => {
-        if (secretPhrase === SECRET_PHRASE) {
-            try {
-                await writeMessages([]); 
-                io.emit('messages-cleared'); 
-            } catch (error) {
-                console.error('Error clearing messages:', error);
-                socket.emit('error', 'Failed to clear messages on the server.');
-            }
-        } else {
-            socket.emit('error', 'Incorrect secret phrase.');
-        }
-    });
-
-    socket.on('typing', () => {
-        const username = activeUsers.get(socket.id);
-        if (username) {
-            socket.broadcast.emit('user-typing', username);
-        }
-    });
-
-    socket.on('stop-typing', () => {
-        const username = activeUsers.get(socket.id);
-        if (username) {
-            socket.broadcast.emit('user-stop-typing', username);
-        }
-    });
-
-    socket.on('disconnect', () => {
-        const username = activeUsers.get(socket.id);
-        
-        if (username) {
-            activeUsers.delete(socket.id);
-            io.emit('user-left', {
-                username,
-                timestamp: new Date().toISOString(),
-                activeUsers: Array.from(activeUsers.values())
-            });
-        }
-    });
+socket.on('user-typing', (username) => {
+    document.getElementById('typingUsername').textContent = username;
+    document.getElementById('typingIndicator').classList.add('active');
 });
 
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+socket.on('user-stop-typing', (username) => {
+    document.getElementById('typingIndicator').classList.remove('active');
 });
+
+function updateActiveUsers(users) {
+    const container = document.getElementById('activeUsers');
+    container.innerHTML = users.map(u => `
+        <div class="user-item">
+            <div class="user-status"></div>
+            ${u}
+        </div>
+    `).join('');
+}
+
+// Tie into the system message helper
+socket.on('user-joined', (data) => {
+    updateActiveUsers(data.activeUsers);
+    addSystemMessage(`${data.username} joined the chat`);
+});
+
+socket.on('user-left', (data) => {
+    updateActiveUsers(data.activeUsers);
+    addSystemMessage(`${data.username} left the chat`);
+});
+
+socket.on('user-name-changed', (data) => {
+    updateActiveUsers(data.activeUsers);
+    addSystemMessage(`${data.oldUsername} changed their name to ${data.newUsername}`);
+});
+
+// ==========================================
+// DARK MODE
+// ==========================================
+function toggleDarkMode() {
+    if (document.body.getAttribute('data-theme') === 'dark') {
+        document.body.removeAttribute('data-theme');
+    } else {
+        document.body.setAttribute('data-theme', 'dark');
+    }
+}
+
+// Show modal on load
+window.onload = () => {
+    usernameModal.classList.add('active');
+    usernameInput.focus();
+};

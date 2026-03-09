@@ -627,6 +627,7 @@ body, html {
     gap: 12px;
 }
 
+/* Button Styles inside Modals */
 .modal-btn {
     padding: 10px 24px;
     border: none;
@@ -644,6 +645,23 @@ body, html {
 
 .modal-btn.primary:hover {
     background: var(--btn-hover);
+}
+
+.modal-btn.secondary {
+    background: transparent;
+    color: #5f6368;
+}
+
+.modal-btn.secondary:hover {
+    background: rgba(95, 99, 104, 0.08);
+}
+
+[data-theme="dark"] .modal-btn.secondary {
+    color: #e8eaed;
+}
+
+[data-theme="dark"] .modal-btn.secondary:hover {
+    background: rgba(232, 234, 237, 0.08);
 }
 
 .error-message {

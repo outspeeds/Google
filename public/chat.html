@@ -12,10 +12,24 @@
         <div class="modal-content">
             <h2 id="modalTitle">Sign in to Gmail</h2>
             <p id="modalSubtitle">Enter your username to continue</p>
-            <div class="error-message" id="errorMessage" style="display: none;"></div>
+            <div class="error-message" id="usernameError" style="display: none;"></div>
             <input type="text" id="usernameInput" placeholder="Username" maxlength="20" autocomplete="off">
             <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('usernameModal')">Cancel</button>
                 <button class="modal-btn primary" onclick="registerUsername()">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="clearChatModal">
+        <div class="modal-content">
+            <h2>Clear Chat History</h2>
+            <p>Enter the secret phrase to wipe all messages.</p>
+            <div class="error-message" id="clearError" style="display: none;"></div>
+            <input type="password" id="clearInput" placeholder="Secret Phrase" autocomplete="off">
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('clearChatModal')">Cancel</button>
+                <button class="modal-btn primary" onclick="submitClearChat()">Clear</button>
             </div>
         </div>
     </div>
@@ -71,7 +85,7 @@
         <div class="chat-area">
             <div class="chat-header">
                 <div class="chat-title">General Chat</div>
-                <button class="icon-btn" onclick="promptClearMessages()" title="Clear Chat History">
+                <button class="icon-btn" onclick="showClearChatModal()" title="Clear Chat History">
                     <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #5f6368;">
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                     </svg>
